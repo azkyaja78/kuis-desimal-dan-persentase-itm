@@ -1,0 +1,1171 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Kotak Hitung</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400..700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Konsep: halaman buku tulis berpetak. Kertas biru muda berpetak, tinta navy,
+   tinta biru bolpoin untuk aksi, stabilo kuning hanya untuk satu kata judul. */
+:root {
+  --bg: #EBF1F7; --grid: #D5E0EC; --surface: #FFFFFF; --surface2: #F2F6FA;
+  --ink: #0F1B33; --muted: #4A5870; --line: #C3D1E0; --edge: #0F1B33;
+  --blue: #1C4ED8; --blue-ink: #FFFFFF; --sel: #E3EBFF;
+  --hl: #FFD84D; --hl-ink: #0F1B33;
+  --good: #14693F; --good-bg: #DDF4E7; --bad: #A81F2D; --bad-bg: #FBE1E4;
+  --display: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
+  --body: 'Figtree', 'Segoe UI', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0C1424; --grid: #16223A; --surface: #131E33; --surface2: #182540;
+    --ink: #E8EEFA; --muted: #9DABC6; --line: #2A3957; --edge: #5A6E99;
+    --blue: #86A4FF; --blue-ink: #0C1424; --sel: #1C2D57;
+    --hl: #E5BD2C; --hl-ink: #0C1424;
+    --good: #66D69E; --good-bg: #123826; --bad: #FF8F9B; --bad-bg: #3F1820;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0C1424; --grid: #16223A; --surface: #131E33; --surface2: #182540;
+  --ink: #E8EEFA; --muted: #9DABC6; --line: #2A3957; --edge: #5A6E99;
+  --blue: #86A4FF; --blue-ink: #0C1424; --sel: #1C2D57;
+  --hl: #E5BD2C; --hl-ink: #0C1424;
+  --good: #66D69E; --good-bg: #123826; --bad: #FF8F9B; --bad-bg: #3F1820;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background-color: var(--bg);
+  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 26px 26px;
+  color: var(--ink); font: 400 1rem/1.55 var(--body);
+  padding-inline: 16px; padding-block: 0;
+}
+.shell { max-width: 1040px; margin-inline: auto; padding-bottom: 64px; }
+h1, h2, h3 { font-family: var(--display); line-height: 1.1; margin: 0; text-wrap: balance; letter-spacing: -0.01em; }
+p { margin: 0; }
+.muted { color: var(--muted); }
+.eyebrow { font: 600 .78rem/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.small { font-size: .88rem; }
+:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+button { font: inherit; color: inherit; }
+
+/* header */
+.top { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; padding-block: 16px; }
+.brand { display: flex; align-items: center; gap: 10px; background: none; border: 0; padding: 0; cursor: pointer; font: 800 1.4rem/1 var(--display); letter-spacing: -.02em; }
+.brand svg { width: 30px; height: 30px; }
+.nav { display: flex; flex-wrap: wrap; gap: 4px; margin-inline-end: auto; }
+.nav button { background: none; border: 0; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: 600; color: var(--muted); }
+.nav button:hover { color: var(--ink); background: var(--surface); }
+.nav button[aria-current="page"] { color: var(--ink); box-shadow: inset 0 -3px 0 var(--blue); border-radius: 0; }
+.who { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+#whoName { font-weight: 600; }
+
+/* buttons */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 11px 18px; border: 2px solid var(--edge); border-radius: 8px; background: var(--surface); font-weight: 700; cursor: pointer; box-shadow: 3px 3px 0 var(--edge); transition: transform .08s, box-shadow .08s; }
+.btn:hover { transform: translate(1px, 1px); box-shadow: 2px 2px 0 var(--edge); }
+.btn:active { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--edge); }
+.btn.primary { background: var(--blue); color: var(--blue-ink); }
+.btn.ghost { box-shadow: none; border-color: var(--line); background: transparent; }
+.btn.small { padding: 7px 12px; font-size: .9rem; box-shadow: 2px 2px 0 var(--edge); }
+.btn:disabled { opacity: .45; cursor: not-allowed; box-shadow: none; transform: none; }
+.link { background: none; border: 0; padding: 0; color: var(--blue); text-decoration: underline; cursor: pointer; font-weight: 600; }
+@media (prefers-reduced-motion: reduce) { .btn { transition: none; } }
+
+/* fractions */
+.frac { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; line-height: 1.15; margin-inline: .2em; font-family: var(--mono); font-weight: 700; font-size: .92em; }
+.frac > span:first-child { border-bottom: 2px solid currentColor; padding-inline: .3em; }
+.frac > span:last-child { padding-top: .05em; }
+
+/* hero */
+.hero { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 36px; align-items: center; padding-block: 28px 12px; }
+.hero h1 { font-size: clamp(2.2rem, 6vw, 3.9rem); font-weight: 800; margin-block: 12px 16px; }
+mark { background: var(--hl); color: var(--hl-ink); padding: 0 .15em; border-radius: 3px; }
+.lede { font-size: 1.12rem; max-width: 52ch; color: var(--muted); }
+.cta-row { display: flex; flex-wrap: wrap; gap: 14px; margin-block: 24px 10px; }
+.sheet { background: var(--surface); border: 2px solid var(--edge); border-radius: 10px; box-shadow: 5px 5px 0 var(--edge); padding: 20px; }
+.hero-visual { display: grid; gap: 16px; justify-items: center; }
+.cells { display: grid; grid-template-columns: repeat(10, 1fr); gap: 2px; width: min(240px, 100%); aspect-ratio: 1; }
+.cells i { background: var(--surface2); border: 1px solid var(--line); border-radius: 2px; }
+.cells i.on { background: var(--blue); border-color: var(--blue); }
+.chain { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px 12px; font: 700 1.25rem var(--mono); }
+.chain .eq { color: var(--muted); }
+.chain span.v { padding: 4px 10px; border: 2px solid var(--edge); border-radius: 8px; background: var(--surface2); }
+
+.levels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; margin-block: 36px 0; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.levels > div { padding: 18px 20px; display: grid; gap: 6px; align-content: start; }
+.levels > div + div { border-inline-start: 1px solid var(--line); }
+.levels h3 { font-size: 1.25rem; }
+.levels .tag { font: 600 .75rem var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.levels code { font: 600 .9rem var(--mono); background: var(--surface2); padding: 2px 6px; border-radius: 4px; }
+.mods { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-block: 24px 0; }
+.mods div { padding-block: 10px; border-top: 3px solid var(--ink); display: grid; gap: 2px; }
+.mods b { font-family: var(--display); font-size: 1.05rem; }
+
+/* page titles */
+.pg-title { display: grid; gap: 8px; margin-block: 12px 24px; }
+.pg-title h2 { font-size: clamp(1.7rem, 4vw, 2.5rem); font-weight: 800; }
+
+/* setup */
+.group { border: 0; padding: 0; margin: 0 0 26px; min-width: 0; }
+.group legend { font: 700 1.15rem var(--display); margin-bottom: 10px; padding: 0; }
+.choices { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+.pick { position: relative; display: block; cursor: pointer; }
+.pick input { position: absolute; opacity: 0; inset: 0; }
+.pick > span { display: grid; gap: 4px; height: 100%; padding: 14px 16px; background: var(--surface); border: 2px solid var(--line); border-radius: 10px; }
+.pick > span b { font-family: var(--display); font-size: 1.05rem; }
+.pick > span small { color: var(--muted); font-size: .9rem; line-height: 1.4; }
+.pick:hover > span { border-color: var(--muted); }
+.pick input:checked + span { border-color: var(--blue); background: var(--sel); box-shadow: 3px 3px 0 var(--blue); }
+.pick input:focus-visible + span { outline: 3px solid var(--blue); outline-offset: 2px; }
+.setup-row { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
+select, input[type=text], input[type=number], input[type=datetime-local], textarea { font: inherit; color: var(--ink); background: var(--surface); border: 2px solid var(--line); border-radius: 8px; padding: 9px 12px; max-width: 100%; }
+select:focus, input:focus, textarea:focus { border-color: var(--blue); outline: none; }
+.notice { padding: 10px 14px; border-radius: 8px; background: var(--bad-bg); color: var(--bad); font-weight: 600; margin-block: 14px 0; }
+.notice.info { background: var(--sel); color: var(--ink); }
+
+/* arena */
+.arena-head { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 16px 22px; align-items: end; margin-block: 12px 18px; }
+.prog .row { display: flex; justify-content: space-between; gap: 12px; font-weight: 700; margin-bottom: 6px; flex-wrap: wrap; }
+.bar { height: 12px; border: 2px solid var(--edge); border-radius: 99px; background: var(--surface); overflow: hidden; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--blue); transition: width .3s; }
+.stat { display: grid; gap: 2px; min-width: 84px; }
+.stat .lbl { font: 600 .72rem var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.stat b { font: 700 1.6rem/1 var(--mono); font-variant-numeric: tabular-nums; }
+.tbar { height: 6px; background: var(--line); border-radius: 9px; overflow: hidden; margin-top: 4px; }
+.tbar > i { display: block; height: 100%; width: 100%; background: var(--blue); }
+.stat.low b { color: var(--bad); }
+.stat.low .tbar > i { background: var(--bad); }
+.qcard { background: var(--surface); border: 2px solid var(--edge); border-radius: 12px; box-shadow: 5px 5px 0 var(--edge); padding: clamp(18px, 3vw, 32px); display: grid; gap: 18px; }
+.qcard h2 { font-size: clamp(1.35rem, 3vw, 1.9rem); font-weight: 700; line-height: 1.3; letter-spacing: 0; }
+.qcard h2 .frac { font-size: 1em; }
+.vis { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.vis .cells { width: 150px; }
+.vis p { max-width: 36ch; color: var(--muted); font-size: .92rem; }
+.opts { display: grid; gap: 10px; }
+.opt { display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; padding: 12px 14px; background: var(--surface); border: 2px solid var(--line); border-radius: 10px; cursor: pointer; font-size: 1.1rem; font-family: var(--mono); font-weight: 600; }
+.opt .ltr { flex: none; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 6px; border: 2px solid var(--edge); font: 700 .95rem var(--mono); }
+.opt:hover:not(:disabled) { border-color: var(--muted); }
+.opt.sel { border-color: var(--blue); background: var(--sel); }
+.opt.sel .ltr { background: var(--blue); color: var(--blue-ink); }
+.opt.right { border-color: var(--good); background: var(--good-bg); }
+.opt.wrong { border-color: var(--bad); background: var(--bad-bg); }
+.opt:disabled { cursor: default; }
+.tfopts { grid-template-columns: 1fr 1fr; }
+.fills { display: grid; gap: 14px; }
+.fl { display: grid; gap: 4px; max-width: 340px; }
+.fl > span:first-child { font: 600 .8rem var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.inp { display: flex; align-items: center; gap: 8px; border: 2px solid var(--edge); border-radius: 8px; background: var(--surface); padding-inline: 12px; }
+.inp:focus-within { border-color: var(--blue); outline: 2px solid var(--blue); }
+.inp input { border: 0; outline: none; background: transparent; padding-block: 11px; flex: 1; min-width: 0; font: 700 1.3rem var(--mono); color: var(--ink); }
+.inp em { font: 700 1.1rem var(--mono); color: var(--muted); font-style: normal; }
+.inp.right { border-color: var(--good); background: var(--good-bg); }
+.inp.wrong { border-color: var(--bad); background: var(--bad-bg); }
+.matchrow { display: grid; grid-template-columns: minmax(80px, 1fr) auto minmax(120px, 1fr); gap: 12px; align-items: center; }
+.matchrow .l { font: 700 1.2rem var(--mono); }
+.matchrow select { font: 600 1.05rem var(--mono); }
+.matchrow.right select { border-color: var(--good); background: var(--good-bg); }
+.matchrow.wrong select { border-color: var(--bad); background: var(--bad-bg); }
+.drag { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; max-width: 460px; }
+.drag li { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 2px solid var(--line); border-radius: 10px; background: var(--surface); cursor: grab; font: 700 1.2rem var(--mono); }
+.drag li.drag-on { opacity: .45; }
+.drag .grip { color: var(--muted); letter-spacing: -3px; }
+.drag .dv { flex: 1; }
+.drag .mv { display: flex; gap: 6px; }
+.mini { width: 34px; height: 34px; border: 2px solid var(--line); background: var(--surface2); border-radius: 6px; cursor: pointer; font-weight: 700; }
+.mini:hover:not(:disabled) { border-color: var(--blue); }
+.dragnote { display: flex; justify-content: space-between; max-width: 460px; font: 600 .75rem var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.drag.right li { border-color: var(--good); background: var(--good-bg); }
+.drag.wrong li { border-color: var(--bad); background: var(--bad-bg); }
+.hint { min-height: 1.4em; color: var(--bad); font-weight: 600; font-size: .92rem; }
+.fb { padding: 14px 16px; border-radius: 10px; border: 2px solid; display: grid; gap: 6px; }
+.fb.ok { background: var(--good-bg); border-color: var(--good); }
+.fb.bad { background: var(--bad-bg); border-color: var(--bad); }
+.fb strong { font: 800 1.15rem var(--display); }
+.fb.ok strong { color: var(--good); } .fb.bad strong { color: var(--bad); }
+.actions { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
+.actions .right { margin-inline-start: auto; display: flex; gap: 12px; flex-wrap: wrap; }
+
+/* kalkulator */
+.calc-fab { position: fixed; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 5; }
+.calc { position: fixed; right: 16px; bottom: calc(76px + env(safe-area-inset-bottom, 0px)); z-index: 5; width: 244px; max-width: calc(100vw - 32px); padding: 12px; background: var(--surface); border: 2px solid var(--edge); border-radius: 12px; box-shadow: 5px 5px 0 var(--edge); display: grid; gap: 8px; }
+.calc output { display: block; text-align: right; font: 700 1.6rem var(--mono); padding: 8px 10px; background: var(--surface2); border-radius: 8px; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
+.calc .keys { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.calc .keys button { padding: 10px 0; border: 2px solid var(--line); background: var(--surface); border-radius: 8px; font: 700 1.05rem var(--mono); cursor: pointer; }
+.calc .keys button.op { background: var(--sel); border-color: var(--blue); }
+.calc .keys button:hover { border-color: var(--muted); }
+
+/* hasil */
+.score-hero { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 24px; align-items: center; }
+.big { font: 800 clamp(3.4rem, 10vw, 5.5rem)/1 var(--display); font-variant-numeric: tabular-nums; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 14px; }
+.kpis div { display: grid; gap: 2px; padding-inline-start: 12px; border-inline-start: 3px solid var(--blue); }
+.kpis b { font: 700 1.5rem var(--mono); font-variant-numeric: tabular-nums; }
+.badges { display: flex; flex-wrap: wrap; gap: 12px; }
+.badge { display: flex; gap: 12px; align-items: center; padding: 10px 14px; border: 2px solid var(--edge); border-radius: 10px; background: var(--hl); color: var(--hl-ink); max-width: 100%; }
+.badge b { font-family: var(--display); font-size: 1.05rem; display: block; }
+.badge span { font-size: .85rem; }
+.badge svg { flex: none; width: 30px; height: 30px; }
+.section { margin-block: 30px 0; display: grid; gap: 14px; }
+.section h3 { font-size: 1.35rem; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { width: 42px; height: 42px; border-radius: 8px; border: 2px solid; font: 700 1rem var(--mono); cursor: pointer; }
+.chip.ok { background: var(--good-bg); border-color: var(--good); color: var(--good); }
+.chip.no { background: var(--bad-bg); border-color: var(--bad); color: var(--bad); }
+.chip[aria-pressed="true"] { outline: 3px solid var(--ink); outline-offset: 2px; }
+.detail { padding: 16px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); display: grid; gap: 8px; }
+.detail dl { margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 14px; }
+.detail dt { font: 600 .78rem var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); padding-top: 3px; }
+.detail dd { margin: 0; }
+.cert { border: 3px double var(--edge); border-radius: 6px; padding: 28px; text-align: center; display: grid; gap: 8px; background: var(--surface); }
+.cert h4 { font: 800 1.9rem var(--display); margin: 0; }
+.cert .nm { font: 700 1.6rem var(--display); border-bottom: 2px solid var(--ink); display: inline-block; padding-inline: 18px; justify-self: center; max-width: 100%; overflow-wrap: anywhere; }
+.share { display: flex; flex-wrap: wrap; gap: 10px; }
+.share a { text-decoration: none; color: inherit; }
+
+/* tabel */
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; min-width: 520px; font-variant-numeric: tabular-nums; }
+th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { font: 600 .75rem var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); background: var(--surface2); }
+td.num, th.num { text-align: right; }
+tr:last-child td { border-bottom: 0; }
+tr.me td { background: var(--sel); font-weight: 700; }
+.rank { font: 800 1.1rem var(--mono); }
+.sample-tag { font: 600 .72rem var(--mono); color: var(--muted); border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; margin-inline-start: 6px; }
+
+/* admin */
+.admin-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+.form { display: grid; gap: 14px; }
+.form label.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.form label.col { display: grid; gap: 4px; }
+.form label.col > span { font-weight: 600; }
+.hbar { display: grid; grid-template-columns: minmax(120px, 1.2fr) minmax(80px, 1fr) 54px; gap: 12px; align-items: center; padding-block: 6px; }
+.hbar .track { height: 12px; background: var(--surface2); border: 1px solid var(--line); border-radius: 99px; overflow: hidden; }
+.hbar .track i { display: block; height: 100%; background: var(--bad); }
+.hbar .pctv { text-align: right; font: 700 .95rem var(--mono); }
+.empty { padding: 22px; border: 2px dashed var(--line); border-radius: 10px; color: var(--muted); }
+textarea.csv { width: 100%; min-height: 150px; font: .82rem/1.4 var(--mono); }
+.dialog-back { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; padding: 16px; background: rgba(8, 14, 28, .6); }
+.dialog { width: min(420px, 100%); display: grid; gap: 14px; }
+.dialog label { display: grid; gap: 4px; font-weight: 600; }
+.dialog input { width: 100%; }
+.foot { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 16px; margin-top: 48px; padding-top: 14px; border-top: 1px solid var(--line); }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(20px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 8px; font-weight: 600; z-index: 30; max-width: calc(100vw - 32px); }
+
+@media (max-width: 760px) {
+  .hero { grid-template-columns: minmax(0, 1fr); }
+  .levels { grid-template-columns: minmax(0, 1fr); }
+  .levels > div + div { border-inline-start: 0; border-block-start: 1px solid var(--line); }
+  .mods { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .admin-grid { grid-template-columns: minmax(0, 1fr); }
+  .arena-head { grid-template-columns: minmax(0, 1fr) auto; }
+  .arena-head .prog { grid-column: 1 / -1; }
+  .score-hero { grid-template-columns: minmax(0, 1fr); }
+  .matchrow { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .matchrow .arrow { display: none; }
+  .tfopts { grid-template-columns: 1fr; }
+  .hbar { grid-template-columns: minmax(0, 1fr) 54px; }
+  .hbar .track { grid-column: 1 / -1; grid-row: 2; }
+}
+</style>
+
+<div class="shell">
+  <header class="top">
+    <button class="brand" data-go="home" aria-label="Kotak Hitung, ke beranda">
+      <svg viewBox="0 0 30 30" aria-hidden="true"><rect x="1.5" y="1.5" width="27" height="27" rx="3" fill="var(--surface)" stroke="var(--edge)" stroke-width="2"/><path d="M11 2v26M20 2v26M2 11h26M2 20h26" stroke="var(--line)" stroke-width="1.5"/><rect x="2.5" y="2.5" width="8" height="8" fill="var(--blue)"/><rect x="11.5" y="2.5" width="8" height="8" fill="var(--blue)"/><rect x="2.5" y="11.5" width="8" height="8" fill="var(--blue)"/></svg>
+      <span>Kotak Hitung</span>
+    </button>
+    <nav class="nav" aria-label="Menu utama">
+      <button data-go="home">Beranda</button>
+      <button data-go="setup">Mulai Kuis</button>
+      <button data-go="board">Peringkat</button>
+    </nav>
+    <div class="who"><span id="whoName"></span><button class="btn small" id="btnLogin">Masuk / Daftar</button></div>
+  </header>
+
+  <main>
+    <!-- 1. Beranda -->
+    <section id="pg-home">
+      <div class="hero">
+        <div>
+          <p class="eyebrow">Matematika untuk kelas 5 sampai 8</p>
+          <h1>Asah Kemampuan Pecahan, <mark>Desimal</mark>, &amp; Persentase!</h1>
+          <p class="lede">Empat modul latihan dengan soal yang selalu baru: mengubah bentuk bilangan, mencocokkan, mengurutkan, sampai soal cerita diskon dan bunga.</p>
+          <div class="cta-row">
+            <button class="btn primary" data-go="setup">Mulai Kuis Sekarang</button>
+            <button class="btn" data-go="setup">Pilih Level</button>
+          </div>
+          <p class="small muted">Masuk untuk menyimpan riwayat nilai dan mendapat sertifikat digital. Tanpa masuk pun kamu tetap bisa berlatih.</p>
+        </div>
+        <div class="hero-visual sheet" aria-label="Contoh: tiga perempat sama dengan 0,75 dan 75 persen">
+          <div class="cells" id="heroCells"></div>
+          <div class="chain"><span class="v"><span class="frac"><span>3</span><span>4</span></span></span><span class="eq">=</span><span class="v">0,75</span><span class="eq">=</span><span class="v">75%</span></div>
+        </div>
+      </div>
+      <div class="levels" role="list">
+        <div role="listitem"><span class="tag">Mudah</span><h3>Pemula</h3><p class="muted">Penyebut 2, 4, 5, 10. Persen kelipatan 5.</p><p><code>1/4 = 0,25</code></p></div>
+        <div role="listitem"><span class="tag">Sedang</span><h3>Menengah</h3><p class="muted">Penyebut 8, 20, 25, 50. Mencocokkan, pajak, bunga tabungan.</p><p><code>3/8 = 37,5%</code></p></div>
+        <div role="listitem"><span class="tag">Sulit</span><h3>Mahir</h3><p class="muted">Penyebut 16, 40, 125. Mengurutkan campuran, diskon bertingkat.</p><p><code>20% lalu 10%</code></p></div>
+      </div>
+      <div class="mods">
+        <div><b>Modul A</b><span class="muted small">Pecahan ke desimal dan sebaliknya</span></div>
+        <div><b>Modul B</b><span class="muted small">Pecahan dan desimal ke persentase</span></div>
+        <div><b>Modul C</b><span class="muted small">Soal cerita diskon dan bunga</span></div>
+        <div><b>Modul D</b><span class="muted small">Campuran semua materi</span></div>
+      </div>
+    </section>
+
+    <!-- 2. Pemilihan mode -->
+    <section id="pg-setup" hidden>
+      <div class="pg-title"><p class="eyebrow">Atur kuis</p><h2>Pilih topik, level, dan mode</h2></div>
+      <fieldset class="group"><legend>1. Topik</legend>
+        <div class="choices">
+          <label class="pick"><input type="radio" name="mod" value="A" checked><span><b>Modul A</b><small>Konversi pecahan ke desimal dan sebaliknya</small></span></label>
+          <label class="pick"><input type="radio" name="mod" value="B"><span><b>Modul B</b><small>Konversi pecahan atau desimal ke persentase</small></span></label>
+          <label class="pick"><input type="radio" name="mod" value="C"><span><b>Modul C</b><small>Soal cerita diskon dan bunga dalam kehidupan sehari-hari</small></span></label>
+          <label class="pick"><input type="radio" name="mod" value="D"><span><b>Modul D</b><small>Campuran: semua materi</small></span></label>
+        </div>
+      </fieldset>
+      <fieldset class="group"><legend>2. Tingkat kesulitan</legend>
+        <div class="choices">
+          <label class="pick"><input type="radio" name="level" value="easy" checked><span><b>Mudah (Pemula)</b><small>Angka bulat dan penyebut sederhana</small></span></label>
+          <label class="pick"><input type="radio" name="level" value="medium"><span><b>Sedang (Menengah)</b><small>Penyebut lebih beragam, ada mencocokkan</small></span></label>
+          <label class="pick"><input type="radio" name="level" value="hard"><span><b>Sulit (Mahir)</b><small>Desimal tiga angka, mengurutkan, soal bertingkat</small></span></label>
+        </div>
+      </fieldset>
+      <fieldset class="group"><legend>3. Mode kuis</legend>
+        <div class="choices">
+          <label class="pick"><input type="radio" name="mode" value="practice" checked><span><b>Mode Latihan</b><small>Tanpa batas waktu. Pembahasan muncul setelah tiap soal.</small></span></label>
+          <label class="pick"><input type="radio" name="mode" value="challenge"><span><b>Mode Tantangan</b><small>Timer per soal, bonus kecepatan, bonus beruntun, masuk papan peringkat.</small></span></label>
+        </div>
+      </fieldset>
+      <div class="setup-row">
+        <label>Jumlah soal <select id="selN"><option>5</option><option selected>10</option><option>15</option></select></label>
+        <button class="btn primary" id="btnStart">Mulai Kuis</button>
+      </div>
+      <div class="notice" id="setupMsg" role="alert" hidden></div>
+    </section>
+
+    <!-- 3. Arena -->
+    <section id="pg-quiz" hidden>
+      <div class="arena-head">
+        <div class="prog"><div class="row"><span id="qNum"></span><span id="qMeta" class="muted"></span></div><div class="bar" role="progressbar" aria-label="Kemajuan kuis"><i id="pBar"></i></div></div>
+        <div class="stat" id="timerBox" hidden><span class="lbl">Waktu</span><b><span id="tNum">60</span>s</b><div class="tbar"><i id="tBar"></i></div></div>
+        <div class="stat" id="scoreBox" hidden><span class="lbl">Skor</span><b id="sNum">0</b></div>
+      </div>
+      <article class="qcard">
+        <p class="eyebrow" id="qTag"></p>
+        <h2 id="qText"></h2>
+        <div class="vis" id="qVis" hidden></div>
+        <div id="ans"></div>
+        <p class="hint" id="hint" role="status"></p>
+        <div id="fb" hidden></div>
+        <div class="actions">
+          <button class="btn" id="btnSkip">Lewati</button>
+          <div class="right"><button class="btn primary" id="btnAnswer">Jawab</button><button class="btn primary" id="btnNext" hidden>Selanjutnya</button></div>
+        </div>
+      </article>
+      <button class="btn calc-fab" id="calcFab" aria-expanded="false" aria-controls="calc">Kalkulator</button>
+      <div class="calc" id="calc" hidden>
+        <output id="calcOut" aria-live="polite">0</output>
+        <div class="keys" id="calcKeys">
+          <button>7</button><button>8</button><button>9</button><button class="op">÷</button>
+          <button>4</button><button>5</button><button>6</button><button class="op">×</button>
+          <button>1</button><button>2</button><button>3</button><button class="op">−</button>
+          <button>0</button><button>,</button><button class="op">=</button><button class="op">+</button>
+          <button>C</button><button>⌫</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. Hasil -->
+    <section id="pg-result" hidden>
+      <div class="pg-title"><p class="eyebrow" id="rMeta"></p><h2>Hasil kuismu</h2></div>
+      <div class="sheet score-hero">
+        <div><div class="big" id="rScore">0</div><p class="muted small">skor akhir</p></div>
+        <div class="kpis" id="rKpis"></div>
+      </div>
+      <div class="section"><h3>Lencana</h3><div class="badges" id="rBadges"></div></div>
+      <div class="section"><h3>Analisis jawaban</h3>
+        <p class="muted small">Hijau berarti benar, merah berarti salah. Pilih nomor untuk melihat pembahasan lengkap.</p>
+        <div class="chips" id="rChips"></div>
+        <div class="detail" id="rDetail"></div>
+      </div>
+      <div class="section" id="rCertBox"></div>
+      <div class="section" id="rSendBox"><h3>Kirim hasil ke guru</h3>
+        <p class="muted small">Isi nama dan kelasmu, salin kode di bawah, lalu kirim ke guru lewat WhatsApp atau tempel di grup kelas. Guru menggabungkan semua kode di dasbor admin.</p>
+        <div class="setup-row"><label>Nama <input type="text" id="sendName" maxlength="30" autocomplete="off"></label><label>Kelas <input type="text" id="sendCls" maxlength="30" autocomplete="off"></label></div>
+        <textarea class="csv" id="sendCode" readonly rows="3" aria-label="Kode hasil"></textarea>
+        <div class="share"><button class="btn small" id="sendCopy">Salin kode</button><a class="btn small" id="sendWa" target="_blank" rel="noopener noreferrer" href="#">Kirim lewat WhatsApp</a></div>
+      </div>
+      <div class="section"><h3>Selanjutnya</h3>
+        <div class="share">
+          <button class="btn primary" id="btnAgain">Ulangi Kuis</button>
+          <button class="btn" data-go="setup">Coba Level Lain</button>
+          <button class="btn" data-go="board">Lihat Peringkat</button>
+        </div>
+        <p class="muted small">Bagikan skormu</p>
+        <div class="share" id="rShare"></div>
+      </div>
+    </section>
+
+    <!-- Peringkat -->
+    <section id="pg-board" hidden>
+      <div class="pg-title"><p class="eyebrow">Papan peringkat</p><h2>Skor tertinggi</h2></div>
+      <div class="setup-row" style="margin-bottom:14px"><label>Tampilkan <select id="boardMode"><option value="challenge">Mode Tantangan</option><option value="practice">Mode Latihan</option><option value="all">Semua</option></select></label></div>
+      <div class="tablewrap"><table><thead><tr><th>#</th><th>Nama</th><th>Topik</th><th>Level</th><th class="num">Skor</th><th class="num">Benar</th><th class="num">Waktu</th></tr></thead><tbody id="boardBody"></tbody></table></div>
+      <p class="muted small" id="boardNote" style="margin-top:10px"></p>
+      <div class="section"><h3>Riwayat nilaimu</h3><div id="history"></div></div>
+    </section>
+
+    <!-- Admin -->
+    <section id="pg-admin" hidden>
+      <div class="pg-title"><p class="eyebrow">Untuk guru dan pengelola</p><h2>Dasbor admin</h2>
+        <div class="setup-row"><button class="btn small ghost" id="adminOut">Keluar admin</button></div></div>
+      <div class="admin-grid">
+        <div class="sheet form">
+          <h3>Pengaturan kuis</h3>
+          <label class="row"><input type="checkbox" id="cfgShuffle"> Acak urutan soal dan pilihan jawaban</label>
+          <label class="col"><span>Batas percobaan per pengguna per hari</span><input type="number" id="cfgMax" min="0" max="99" style="width:120px"><small class="muted">0 berarti tanpa batas</small></label>
+          <label class="col"><span>Kuis dibuka pada</span><input type="datetime-local" id="cfgOpen"></label>
+          <label class="col"><span>Kuis ditutup pada</span><input type="datetime-local" id="cfgClose"></label>
+          <div class="setup-row"><button class="btn primary small" id="cfgSave">Simpan pengaturan</button><span id="cfgMsg" class="muted small" role="status"></span></div>
+        </div>
+        <div class="sheet" style="display:grid;gap:14px"><h3>Ringkasan</h3><div class="kpis" id="aKpis"></div></div>
+      </div>
+      <div class="section"><h3>Impor hasil murid</h3>
+        <p class="muted small">Tempel kode hasil dari murid, satu kode per baris. Pesan WhatsApp lengkap juga boleh ditempel, kodenya dikenali otomatis. Hasil yang sama tidak dihitung dua kali.</p>
+        <textarea class="csv" id="impBox" placeholder="KH1.…" aria-label="Kode hasil murid"></textarea>
+        <div class="setup-row"><button class="btn primary small" id="impGo">Impor</button><span id="impMsg" class="muted small" role="status"></span></div>
+      </div>
+      <div class="section"><h3>Rekap per murid</h3><div class="tablewrap"><table><thead><tr><th>Nama</th><th>Kelas</th><th class="num">Percobaan</th><th class="num">Skor terbaik</th><th class="num">Rata-rata benar</th><th>Terakhir</th></tr></thead><tbody id="aStudents"></tbody></table></div></div>
+      <div class="section"><h3>Soal yang paling sering salah</h3><div id="aHard"></div></div>
+      <div class="section"><h3>Per topik</h3><div class="tablewrap"><table><thead><tr><th>Topik</th><th class="num">Percobaan</th><th class="num">Rata-rata skor</th><th class="num">Rata-rata benar</th></tr></thead><tbody id="aMods"></tbody></table></div></div>
+      <div class="section"><h3>Ekspor hasil (CSV)</h3>
+        <p class="muted small">Salin teks di bawah, lalu tempel ke Excel atau Google Sheets.</p>
+        <textarea class="csv" id="csvBox" readonly aria-label="Data CSV"></textarea>
+        <div class="setup-row"><button class="btn small" id="csvCopy">Salin CSV</button><button class="btn small ghost" id="wipe">Hapus semua data</button></div>
+        <p class="muted small">Data tersimpan di peramban ini. Simpan CSV secara berkala sebagai cadangan, karena menghapus data situs akan menghapus semuanya.</p>
+      </div>
+    </section>
+  </main>
+  <footer class="foot"><span class="muted small">Kotak Hitung · latihan pecahan, desimal, dan persentase</span><button class="link small" id="adminLink">Masuk admin</button></footer>
+</div>
+
+<div class="dialog-back" id="pinBack" hidden>
+  <form class="sheet dialog" id="pinForm" aria-labelledby="pinTitle">
+    <h3 id="pinTitle">Masuk admin</h3>
+    <p class="muted small" id="pinInfo">Halaman ini khusus pengelola kuis. Masukkan kode admin yang hanya dimiliki satu orang.</p>
+    <label for="inPin">Kode admin<input type="password" id="inPin" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="24" required></label>
+    <p class="hint" id="pinMsg" role="alert"></p>
+    <div class="setup-row"><button class="btn primary" type="submit" id="pinOk">Masuk</button><button class="btn ghost" type="button" id="pinCancel">Batal</button></div>
+  </form>
+</div>
+
+<div class="dialog-back" id="loginBack" hidden>
+  <form class="sheet dialog" id="loginForm" aria-labelledby="loginTitle">
+    <h3 id="loginTitle">Masuk atau daftar</h3>
+    <p class="muted small">Cukup nama. Riwayat nilai dan sertifikat tersimpan di peramban ini.</p>
+    <label for="inName">Nama<input type="text" id="inName" maxlength="30" autocomplete="name" required></label>
+    <label for="inCls">Kelas atau sekolah (boleh kosong)<input type="text" id="inCls" maxlength="30"></label>
+    <div class="setup-row"><button class="btn primary" type="submit">Simpan</button><button class="btn ghost" type="button" id="loginCancel">Batal</button><button class="link" type="button" id="logout" hidden>Keluar</button></div>
+  </form>
+</div>
+<script>
+/* Generator soal: logika murni tanpa DOM supaya bisa diuji. */
+let CFG = { shuffle: true };
+const rnd = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
+const pick = a => a[rnd(0, a.length - 1)];
+const shuf = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rnd(0, i); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const gcd = (a, b) => (b ? gcd(b, a % b) : a);
+const r4 = x => Math.round(x * 1e4) / 1e4;
+const fmt = x => String(r4(x)).replace('.', ',');
+const pc = x => fmt(x) + '%';
+const rp = x => 'Rp ' + String(Math.round(x)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+const fr = (n, d) => `<span class="frac"><span>${n}</span><span>${d}</span></span>`;
+
+function parseNum(s, isRp) {
+  s = String(s).trim().replace(/rp|%/gi, '').replace(/\s/g, '');
+  if (!s) return NaN;
+  if (isRp) return /^[\d.,]+$/.test(s) ? Number(s.replace(/[.,]/g, '')) : NaN;
+  s = s.replace(',', '.');
+  if (!/^-?\d*\.?\d+$/.test(s)) return NaN;
+  return Number(s);
+}
+const fieldOk = (f, raw) => { const v = parseNum(raw, f.unit === 'Rp'); return Number.isFinite(v) && Math.abs(v - f.answer) < 5e-5; };
+const fmtField = f => (f.unit === 'Rp' ? rp(f.answer) : f.unit === '%' ? pc(f.answer) : fmt(f.answer));
+
+/* ---------- bahan angka ---------- */
+function randFrac(level) {
+  const ds = { easy: [2, 4, 5, 10], medium: [4, 5, 8, 10, 20, 25, 50], hard: [8, 16, 40, 125, 20, 25] }[level];
+  for (let i = 0; i < 80; i++) {
+    const d = pick(ds);
+    const top = level === 'hard' && Math.random() < 0.3 ? d * 2 - 1 : d - 1;
+    const n = rnd(1, top);
+    if (gcd(n, d) === 1) return [n, d];
+  }
+  return [3, 4];
+}
+function randDec(level) {
+  if (level === 'easy') return rnd(1, 19) * 5 / 100;
+  if (level === 'medium') return rnd(1, 150) / 100;
+  return rnd(1, 159) * 5 / 1000;
+}
+function distinctFracs(level, k) {
+  const o = [], s = new Set(); let g = 0;
+  while (o.length < k && g++ < 300) { const [n, d] = randFrac(level); const key = r4(n / d); if (s.has(key)) continue; s.add(key); o.push([n, d]); }
+  return o;
+}
+function numWrong(ans, cands, f, step) {
+  const seen = new Set([f(ans)]), out = [];
+  for (const c of shuf(cands)) { if (Number.isFinite(c) && c > 0) { const s = f(c); if (!seen.has(s)) { seen.add(s); out.push(s); } } }
+  let k = 1;
+  while (out.length < 3 && k < 60) {
+    for (const c of [ans + step * k, ans - step * k]) { if (c > 0 && out.length < 3) { const s = f(c); if (!seen.has(s)) { seen.add(s); out.push(s); } } }
+    k++;
+  }
+  return out;
+}
+function dragItems(level, count, forms) {
+  const out = [], seen = new Set(); let g = 0;
+  while (out.length < count && g++ < 400) {
+    const useFrac = Math.random() < 0.5; let v, n, d;
+    if (useFrac) { [n, d] = randFrac(level); v = n / d; } else v = randDec(level);
+    const key = r4(v); if (seen.has(key) || v <= 0) continue; seen.add(key);
+    const f2 = useFrac ? forms : forms.filter(x => x !== 'f');
+    const form = pick(f2);
+    const html = form === 'f' ? fr(n, d) : form === 'd' ? fmt(v) : pc(v * 100);
+    out.push({ html, val: v });
+  }
+  return out;
+}
+
+/* ---------- konstruktor soal ---------- */
+function mcQ(mod, tag, text, ans, wrong, explain, visual) {
+  let opts = [ans, ...[...new Set(wrong)].filter(w => w !== ans).slice(0, 3)];
+  opts = CFG.shuffle ? shuf(opts) : opts.slice().sort();
+  return { mod, type: 'mc', tag, text, sig: text, visual: visual ?? null, choices: opts, correct: opts.indexOf(ans), explain, answerText: ans };
+}
+function tfQ(mod, tag, stmt, isTrue, explain) {
+  return { mod, type: 'tf', tag, text: `Benar atau salah?<br><strong>${stmt}</strong>`, sig: stmt, choices: ['Benar', 'Salah'], correct: isTrue ? 0 : 1, explain, answerText: isTrue ? 'Benar' : 'Salah' };
+}
+function fillQ(mod, tag, text, fields, explain, visual) {
+  return { mod, type: 'fill', tag, text, sig: text, visual: visual ?? null, fields, explain, answerText: fields.map(fmtField).join(' ; ') };
+}
+function matchQ(mod, tag, text, pairs, explain) {
+  return { mod, type: 'match', tag, text, sig: text + JSON.stringify(pairs), pairs, rights: shuf(pairs.map(p => p.r)), explain, answerText: pairs.map(p => `${p.l} → ${p.r}`).join(' · ') };
+}
+function dragQ(mod, tag, text, items, explain) {
+  const sorted = items.slice().sort((a, b) => a.val - b.val);
+  let order = shuf(items), g = 0;
+  while (order.every((o, i) => o === sorted[i]) && g++ < 20) order = shuf(items);
+  return { mod, type: 'drag', tag, text, sig: text + JSON.stringify(items.map(i => i.html)), order, sorted, explain, answerText: sorted.map(i => i.html).join(' &lt; ') };
+}
+const dragExplain = items => 'Ubah semua ke bentuk desimal dulu: ' + items.slice().sort((a, b) => a.val - b.val).map(i => `${i.html} = ${fmt(i.val)}`).join('; ') + '. Lalu urutkan dari yang terkecil.';
+
+function explF2D(n, d) {
+  const v = n / d;
+  for (const m of [100, 1000]) {
+    if (m % d === 0 && d !== m) return `Samakan penyebut menjadi ${m}: ${fr(n, d)} = ${fr(n * m / d, m)} = <b>${fmt(v)}</b>. Cara lain: ${n} ÷ ${d} = ${fmt(v)}.`;
+  }
+  return `${fr(n, d)} = ${n} ÷ ${d} = <b>${fmt(v)}</b>`;
+}
+const visFor = (v, level) => (level !== 'hard' && v < 1 && Number.isInteger(r4(v * 100)) && Math.random() < 0.5 ? Math.round(v * 100) : null);
+
+/* ---------- Modul A: pecahan dan desimal ---------- */
+const BUILD = { A: {}, B: {}, C: {} };
+BUILD.A.f2d_mc = l => {
+  const [n, d] = randFrac(l), v = n / d;
+  return mcQ('A', 'A · Pecahan ke desimal', `Berapa bentuk desimal dari pecahan ${fr(n, d)}?`, fmt(v),
+    numWrong(v, [1 - v, Number('0.' + n + d), v * 10, v / 10, d / n], fmt, 0.05), explF2D(n, d), visFor(v, l));
+};
+BUILD.A.f2d_fill = l => {
+  const [n, d] = randFrac(l), v = n / d;
+  return fillQ('A', 'A · Pecahan ke desimal (isian)', `Ubah pecahan ${fr(n, d)} menjadi bentuk desimal.`, [{ label: 'Desimal', answer: v, ph: 'contoh: 0,75' }], explF2D(n, d), visFor(v, l));
+};
+BUILD.A.d2f_mc = l => {
+  const [n, d] = randFrac(l), v = n / d;
+  const digits = (String(r4(v)).split('.')[1] || '').length, den = 10 ** digits, sn = Math.round(v * den);
+  const wrong = [fr(d, n), fr(n + 1, d), fr(n, d + 1), fr(n * 3, d * 3)];
+  if (sn !== n || den !== d) wrong.unshift(fr(sn, den));
+  const g = gcd(sn, den);
+  const ex = g > 1 ? `${fmt(v)} = ${fr(sn, den)}. Bagi pembilang dan penyebut dengan ${g}: <b>${fr(n, d)}</b>.` : `${fmt(v)} = <b>${fr(n, d)}</b>.`;
+  return mcQ('A', 'A · Desimal ke pecahan', `Pecahan paling sederhana dari ${fmt(v)} adalah …`, fr(n, d), wrong, ex);
+};
+BUILD.A.tf = l => {
+  const [n, d] = randFrac(l), v = n / d, t = Math.random() < 0.5;
+  const shown = t ? fmt(v) : numWrong(v, [1 - v, Number('0.' + n + d), v * 10, v / 10], fmt, 0.05)[0];
+  return tfQ('A', 'A · Benar atau salah', `${fr(n, d)} = ${shown}`, t, explF2D(n, d));
+};
+BUILD.A.match = l => {
+  const f = distinctFracs(l, 3);
+  return matchQ('A', 'A · Mencocokkan', 'Pasangkan setiap pecahan dengan bentuk desimalnya.', f.map(([n, d]) => ({ l: fr(n, d), r: fmt(n / d) })), f.map(([n, d]) => explF2D(n, d)).join('<br>'));
+};
+BUILD.A.drag = l => { const it = dragItems(l, l === 'hard' ? 4 : 3, ['f', 'd']); return dragQ('A', 'A · Mengurutkan', 'Seret atau geser untuk mengurutkan dari yang terkecil ke terbesar.', it, dragExplain(it)); };
+
+/* ---------- Modul B: ke persentase ---------- */
+BUILD.B.f2p_mc = l => {
+  const [n, d] = randFrac(l), v = n / d, p = r4(v * 100);
+  return mcQ('B', 'B · Pecahan ke persen', `Nyatakan pecahan ${fr(n, d)} dalam bentuk persen.`, pc(p),
+    numWrong(p, [v, 100 - p, p * 10, p / 10], pc, 5),
+    `${fr(n, d)} = ${n} ÷ ${d} = ${fmt(v)}. Kalikan 100%: ${fmt(v)} × 100% = <b>${pc(p)}</b>.`, visFor(v, l));
+};
+BUILD.B.d2p_fill = l => {
+  const dec = randDec(l), p = r4(dec * 100);
+  return fillQ('B', 'B · Desimal ke persen', `Lengkapi: ${fmt(dec)} = … %`, [{ label: 'Persen', answer: p, unit: '%', ph: 'contoh: 75' }],
+    `Kalikan dengan 100%: ${fmt(dec)} × 100% = <b>${pc(p)}</b>. Caranya sama dengan menggeser koma dua tempat ke kanan.`);
+};
+BUILD.B.p2d_mc = l => {
+  const p = r4(randDec(l) * 100), v = p / 100;
+  return mcQ('B', 'B · Persen ke desimal', `Bentuk desimal dari ${pc(p)} adalah …`, fmt(v),
+    numWrong(v, [p / 10, p, p / 1000, p * 10], fmt, 0.05),
+    `${pc(p)} = ${fr(fmt(p), 100)} = ${fmt(p)} ÷ 100 = <b>${fmt(v)}</b>. Geser koma dua tempat ke kiri.`);
+};
+BUILD.B.tf = l => {
+  const [n, d] = randFrac(l), v = n / d, p = r4(v * 100), t = Math.random() < 0.5;
+  const shown = t ? pc(p) : numWrong(p, [v, 100 - p, p * 10, p / 10], pc, 5)[0];
+  return tfQ('B', 'B · Benar atau salah', `${fr(n, d)} = ${shown}`, t, `${fr(n, d)} = ${fmt(v)} = <b>${pc(p)}</b>.`);
+};
+BUILD.B.match = l => {
+  const f = distinctFracs(l, 3);
+  return matchQ('B', 'B · Mencocokkan', 'Pasangkan setiap pecahan dengan bentuk persennya.', f.map(([n, d]) => ({ l: fr(n, d), r: pc(r4(n / d * 100)) })),
+    f.map(([n, d]) => `${fr(n, d)} = ${fmt(n / d)} = <b>${pc(r4(n / d * 100))}</b>`).join('<br>'));
+};
+BUILD.B.blank = l => {
+  const [n, d] = randFrac(l), v = n / d, p = r4(v * 100);
+  return fillQ('B', 'B · Isi titik-titik', `Isilah titik-titik: ${fr(n, d)} = … (desimal) = … %`,
+    [{ label: 'Desimal', answer: v, ph: '0,75' }, { label: 'Persen', answer: p, unit: '%', ph: '75' }],
+    `${fr(n, d)} = ${n} ÷ ${d} = <b>${fmt(v)}</b>, lalu ${fmt(v)} × 100% = <b>${pc(p)}</b>.`);
+};
+BUILD.B.drag = l => { const it = dragItems(l, 4, ['f', 'd', 'p']); return dragQ('B', 'B · Mengurutkan', 'Seret atau geser untuk mengurutkan dari yang terkecil ke terbesar.', it, dragExplain(it)); };
+
+/* ---------- Modul C: soal cerita ---------- */
+const ITEMS = ['sepatu olahraga', 'tas sekolah', 'jaket', 'kemeja batik', 'headphone', 'sepeda lipat', 'set alat gambar'];
+const NAMES = ['Rina', 'Budi', 'Sari', 'Doni', 'Maya', 'Agus', 'Wulan'];
+const cq = (q) => { q.story = true; return q; };
+
+BUILD.C.c1 = l => {
+  const price = rnd(2, 40) * 10000, d = pick(l === 'easy' ? [10, 20, 25, 50] : [15, 30, 35, 40]);
+  const disc = price * d / 100, pay = price - disc, nm = pick(NAMES), it = pick(ITEMS);
+  const text = `${nm} ingin membeli ${it} seharga ${rp(price)}. Toko memberi diskon ${d}%. Berapa rupiah yang harus dibayar ${nm}?`;
+  const ex = `Potongan = ${d}% × ${rp(price)} = ${rp(disc)}.<br>Harga bayar = ${rp(price)} − ${rp(disc)} = <b>${rp(pay)}</b>.`;
+  if (Math.random() < 0.5) return cq(mcQ('C', 'C · Diskon', text, rp(pay), numWrong(pay, [disc, price + disc, price - d * 1000, pay + 5000], rp, 5000), ex));
+  return cq(fillQ('C', 'C · Diskon', text, [{ label: 'Harga bayar', answer: pay, unit: 'Rp', ph: 'contoh: 75000' }], ex));
+};
+BUILD.C.c2 = l => {
+  const price = rnd(2, 40) * 10000, d = pick(l === 'easy' ? [10, 20, 25, 50] : [15, 30, 35, 40]);
+  const disc = price * d / 100, nm = pick(NAMES), it = pick(ITEMS);
+  return cq(fillQ('C', 'C · Potongan harga', `Harga ${it} di sebuah toko ${rp(price)}. Saat promo, ${nm} mendapat diskon ${d}%. Berapa rupiah potongan harganya?`,
+    [{ label: 'Potongan', answer: disc, unit: 'Rp', ph: 'contoh: 15000' }], `Potongan = ${d}% × ${rp(price)} = ${fr(d, 100)} × ${rp(price)} = <b>${rp(disc)}</b>.`));
+};
+BUILD.C.c3 = l => {
+  const P = rnd(2, 10) * 500000, p = pick([5, 6, 8, 10, 12]), t = rnd(1, 3), nm = pick(NAMES);
+  const bunga = P * p / 100 * t, total = P + bunga;
+  const text = `${nm} menabung ${rp(P)} di bank dengan bunga tunggal ${p}% per tahun. Berapa total tabungan ${nm} setelah ${t} tahun?`;
+  const ex = `Bunga = ${rp(P)} × ${p}% × ${t} = ${rp(bunga)}.<br>Total tabungan = ${rp(P)} + ${rp(bunga)} = <b>${rp(total)}</b>.`;
+  if (Math.random() < 0.5) return cq(mcQ('C', 'C · Bunga tabungan', text, rp(total), numWrong(total, [bunga, P + P * p / 100, P + bunga * 2, P + bunga + P * p / 200], rp, 25000), ex));
+  return cq(fillQ('C', 'C · Bunga tabungan', text, [{ label: 'Total tabungan', answer: total, unit: 'Rp', ph: 'contoh: 1500000' }], ex));
+};
+BUILD.C.c4 = l => {
+  const price = rnd(1, 20) * 100000, r = pick([5, 10]), tax = price * r / 100, tot = price + tax, it = pick(ITEMS);
+  return cq(mcQ('C', 'C · Pajak', `Harga ${it} adalah ${rp(price)} belum termasuk pajak ${r}%. Berapa harga yang dibayar setelah pajak?`, rp(tot),
+    numWrong(tot, [tax, price - tax, price + price * (r + 5) / 100, price + tax * 2], rp, 5000),
+    `Pajak = ${r}% × ${rp(price)} = ${rp(tax)}.<br>Harga akhir = ${rp(price)} + ${rp(tax)} = <b>${rp(tot)}</b>.`));
+};
+BUILD.C.c5 = l => {
+  const buy = rnd(2, 20) * 10000, pct = pick([10, 20, 25, 40, 50]), sell = buy + buy * pct / 100, nm = pick(NAMES), it = pick(ITEMS);
+  return cq(fillQ('C', 'C · Untung dan rugi', `${nm} membeli ${it} seharga ${rp(buy)} lalu menjualnya ${rp(sell)}. Berapa persen keuntungan ${nm}?`,
+    [{ label: 'Keuntungan', answer: pct, unit: '%', ph: 'contoh: 20' }],
+    `Untung = ${rp(sell)} − ${rp(buy)} = ${rp(sell - buy)}.<br>Persen untung = ${fr(rp(sell - buy), rp(buy))} × 100% = <b>${pc(pct)}</b>.`));
+};
+BUILD.C.c6 = l => {
+  const price = rnd(1, 15) * 100000, d1 = pick([10, 20, 30]), d2 = pick([10, 20]), it = pick(ITEMS);
+  const after1 = price * (100 - d1) / 100, fin = after1 * (100 - d2) / 100, wrong = price * (100 - d1 - d2) / 100;
+  const text = `${cap(it)} berharga ${rp(price)}. Toko memberi diskon ${d1}%, lalu diskon tambahan ${d2}% dari harga setelah diskon pertama. Berapa harga akhirnya?`;
+  const ex = `Setelah diskon ${d1}%: ${rp(price)} × ${100 - d1}% = ${rp(after1)}.<br>Setelah diskon ${d2}%: ${rp(after1)} × ${100 - d2}% = <b>${rp(fin)}</b>.<br>Diskon bertingkat tidak boleh dijumlahkan (${d1}% + ${d2}% akan memberi ${rp(wrong)}).`;
+  if (Math.random() < 0.5) return cq(mcQ('C', 'C · Diskon bertingkat', text, rp(fin), numWrong(fin, [wrong, after1, price - price * d1 / 100 - d2 * 1000], rp, 5000), ex));
+  return cq(fillQ('C', 'C · Diskon bertingkat', text, [{ label: 'Harga akhir', answer: fin, unit: 'Rp', ph: 'contoh: 540000' }], ex));
+};
+BUILD.C.c7 = l => {
+  const orig = rnd(2, 20) * 50000, d = pick([10, 20, 25, 30, 40]), pay = orig * (100 - d) / 100, nm = pick(NAMES), it = pick(ITEMS);
+  return cq(fillQ('C', 'C · Mencari harga asli', `Setelah mendapat diskon ${d}%, ${nm} membayar ${rp(pay)} untuk ${it}. Berapa harga sebelum diskon?`,
+    [{ label: 'Harga asli', answer: orig, unit: 'Rp', ph: 'contoh: 200000' }],
+    `Harga bayar adalah ${100 - d}% dari harga asli.<br>Harga asli = ${rp(pay)} ÷ ${fr(100 - d, 100)} = ${rp(pay)} × ${fr(100, 100 - d)} = <b>${rp(orig)}</b>.`));
+};
+BUILD.C.c8 = l => {
+  const P = rnd(1, 5) * 1000000, p = pick([6, 9, 12, 15]), m = pick([3, 6, 9, 18]), bunga = P * p / 100 * m / 12, nm = pick(NAMES);
+  return cq(fillQ('C', 'C · Bunga bulanan', `${nm} meminjam ${rp(P)} dengan bunga tunggal ${p}% per tahun. Berapa rupiah bunga yang harus dibayar setelah ${m} bulan?`,
+    [{ label: 'Bunga', answer: bunga, unit: 'Rp', ph: 'contoh: 45000' }],
+    `Bunga = pokok × persen × ${fr('lama (bulan)', 12)}<br>= ${rp(P)} × ${p}% × ${fr(m, 12)} = <b>${rp(bunga)}</b>.`));
+};
+BUILD.C.tf = l => {
+  const price = rnd(2, 20) * 10000, d = pick([10, 20, 25, 50]), disc = price * d / 100, t = Math.random() < 0.5;
+  const shown = t ? disc : pick([disc * 2, price * d / 1000, price - disc].filter(x => x !== disc));
+  return cq(tfQ('C', 'C · Benar atau salah', `Diskon ${d}% dari ${rp(price)} adalah ${rp(shown)}`, t, `${d}% × ${rp(price)} = <b>${rp(disc)}</b>.`));
+};
+function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+/* ---------- perakit kuis ---------- */
+const LEVELS = {
+  A: { easy: ['f2d_mc', 'f2d_fill', 'd2f_mc', 'tf'], medium: ['f2d_mc', 'f2d_fill', 'd2f_mc', 'tf', 'match'], hard: ['f2d_fill', 'd2f_mc', 'match', 'drag', 'f2d_mc', 'tf'] },
+  B: { easy: ['f2p_mc', 'd2p_fill', 'p2d_mc', 'tf'], medium: ['f2p_mc', 'd2p_fill', 'p2d_mc', 'tf', 'match', 'blank'], hard: ['f2p_mc', 'd2p_fill', 'p2d_mc', 'blank', 'drag', 'match', 'tf'] },
+  C: { easy: ['c1', 'c2', 'tf'], medium: ['c1', 'c3', 'c4', 'c5', 'c2'], hard: ['c6', 'c7', 'c8', 'c3', 'c5'] }
+};
+function generateQuiz(mod, level, n) {
+  const qs = [], used = new Set(); let last = '';
+  let seq = [];
+  if (mod === 'D') { const base = shuf(['A', 'B', 'C']); for (let i = 0; i < n; i++) seq.push(base[i % 3]); seq = shuf(seq); }
+  else for (let i = 0; i < n; i++) seq.push(mod);
+  seq.forEach(m => {
+    let q = null;
+    for (let t = 0; t < 60; t++) {
+      const subs = LEVELS[m][level], s = pick(subs);
+      if (s === last && subs.length > 1 && t < 30) continue;
+      const cand = BUILD[m][s](level);
+      if (used.has(cand.sig)) continue;
+      q = cand; last = s; break;
+    }
+    if (!q) q = BUILD[m][pick(LEVELS[m][level])](level);
+    used.add(q.sig); qs.push(q);
+  });
+  return qs;
+}
+
+/* Aplikasi: tampilan dan alur. Bergantung pada gen.js (digabung saat build). */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const mem = {};
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem('kq_' + k); if (v !== null) return JSON.parse(v); } catch (e) {} return mem[k] !== undefined ? mem[k] : d; },
+  set(k, v) { mem[k] = v; try { localStorage.setItem('kq_' + k, JSON.stringify(v)); } catch (e) {} }
+};
+const cfgGet = () => Object.assign({ shuffle: true, maxPerDay: 0, openAt: '', closeAt: '' }, LS.get('cfg', {}));
+const getUser = () => LS.get('user', null);
+const getAttempts = () => LS.get('attempts', []);
+const MODNAME = { A: 'Modul A · Pecahan dan desimal', B: 'Modul B · Ke persentase', C: 'Modul C · Soal cerita', D: 'Modul D · Campuran' };
+const LVNAME = { easy: 'Mudah', medium: 'Sedang', hard: 'Sulit' };
+const MODENAME = { practice: 'Latihan', challenge: 'Tantangan' };
+const dayKey = d => d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+const fmtDT = s => new Date(s).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
+const mmss = s => Math.floor(s / 60) + ':' + String(Math.round(s % 60)).padStart(2, '0');
+let toastT = null;
+function toast(msg) {
+  let t = $('#toast'); if (!t) { t = document.createElement('div'); t.id = 'toast'; t.className = 'toast'; t.setAttribute('role', 'status'); document.body.appendChild(t); }
+  t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 2200);
+}
+function copyText(text, okMsg) {
+  const fail = () => toast('Tidak bisa menyalin otomatis. Blok teks lalu salin manual.');
+  try { navigator.clipboard.writeText(text).then(() => toast(okMsg || 'Tersalin'), fail); } catch (e) { fail(); }
+}
+
+/* ---------- navigasi ---------- */
+const PAGES = ['home', 'setup', 'quiz', 'result', 'board', 'admin'];
+function go(p) {
+  if (p === 'admin' && !adminOK) { openPin(); return; }
+  stopTimer();
+  PAGES.forEach(x => { $('#pg-' + x).hidden = x !== p; });
+  $$('.nav [data-go]').forEach(b => b.setAttribute('aria-current', b.dataset.go === p ? 'page' : 'false'));
+  if (p === 'board') renderBoard();
+  if (p === 'admin') renderAdmin();
+  window.scrollTo(0, 0);
+}
+document.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) { e.preventDefault(); go(b.dataset.go); } });
+
+/* ---------- akses admin: satu kode rahasia milik pengelola ---------- */
+const ADMIN = { salt: '44226eda9efe623f800f92f328517961', iter: 150000, hash: '8c322544724acea1c6fd95edd4c4fdd4388b955dad76557a4477baf1cb9f2d05' };
+let adminOK = false, pinFails = 0, pinLockUntil = 0;
+const toHex = b => [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('');
+const fromHex = h => new Uint8Array(h.match(/../g).map(x => parseInt(x, 16)));
+async function checkAdminCode(raw) {
+  const code = String(raw).toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (!code || !(window.crypto && crypto.subtle)) return null;
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(code), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt: fromHex(ADMIN.salt), iterations: ADMIN.iter }, key, 256);
+  return toHex(bits) === ADMIN.hash;
+}
+function openPin() {
+  $('#inPin').value = ''; $('#pinMsg').textContent = '';
+  $('#pinBack').hidden = false; $('#inPin').focus();
+}
+$('#adminLink').onclick = () => { if (adminOK) go('admin'); else openPin(); };
+$('#pinCancel').onclick = () => { $('#pinBack').hidden = true; };
+$('#pinForm').onsubmit = async e => {
+  e.preventDefault();
+  const msg = $('#pinMsg');
+  if (Date.now() < pinLockUntil) { msg.textContent = 'Terlalu banyak percobaan. Tunggu ' + Math.ceil((pinLockUntil - Date.now()) / 1000) + ' detik.'; return; }
+  const r = await checkAdminCode($('#inPin').value);
+  if (r === null) { msg.textContent = 'Peramban ini tidak bisa memeriksa kode. Buka halaman lewat tautan https.'; return; }
+  if (r) { pinFails = 0; adminOK = true; $('#pinBack').hidden = true; go('admin'); return; }
+  pinFails++; $('#inPin').value = '';
+  if (pinFails >= 5) { pinLockUntil = Date.now() + 30000; pinFails = 0; msg.textContent = 'Kode salah 5 kali. Coba lagi dalam 30 detik.'; } else msg.textContent = 'Kode salah. Coba lagi.';
+};
+$('#adminOut').onclick = () => { adminOK = false; go('home'); toast('Kamu keluar dari admin'); };
+
+/* ---------- masuk ---------- */
+function renderWho() {
+  const u = getUser();
+  $('#whoName').textContent = u ? u.name : '';
+  $('#btnLogin').textContent = u ? 'Ubah profil' : 'Masuk / Daftar';
+}
+$('#btnLogin').onclick = () => {
+  const u = getUser();
+  $('#inName').value = u ? u.name : ''; $('#inCls').value = u ? u.cls || '' : '';
+  $('#logout').hidden = !u; $('#loginBack').hidden = false; $('#inName').focus();
+};
+$('#loginCancel').onclick = () => { $('#loginBack').hidden = true; };
+$('#loginForm').onsubmit = e => {
+  e.preventDefault();
+  const name = $('#inName').value.trim(); if (!name) return;
+  LS.set('user', { name, cls: $('#inCls').value.trim() });
+  $('#loginBack').hidden = true; renderWho(); toast('Halo, ' + name + '!');
+};
+$('#logout').onclick = () => { LS.set('user', null); $('#loginBack').hidden = true; renderWho(); toast('Kamu sudah keluar'); };
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { $('#loginBack').hidden = true; $('#pinBack').hidden = true; } });
+
+/* ---------- beranda ---------- */
+$('#heroCells').innerHTML = Array.from({ length: 100 }, (_, i) => `<i class="${i < 75 ? 'on' : ''}"></i>`).join('');
+const cellsHTML = n => `<div class="cells" aria-hidden="true">${Array.from({ length: 100 }, (_, i) => `<i class="${i < n ? 'on' : ''}"></i>`).join('')}</div>`;
+
+/* ---------- pengaturan kuis ---------- */
+function gate() {
+  const c = cfgGet(), now = new Date();
+  if (c.openAt && now < new Date(c.openAt)) return 'Kuis dibuka pada ' + fmtDT(c.openAt) + '.';
+  if (c.closeAt && now > new Date(c.closeAt)) return 'Kuis ditutup sejak ' + fmtDT(c.closeAt) + '.';
+  if (c.maxPerDay > 0) {
+    const nm = (getUser() || {}).name || 'Tamu', today = dayKey(new Date());
+    const cnt = getAttempts().filter(a => a.name === nm && dayKey(new Date(a.ts)) === today).length;
+    if (cnt >= c.maxPerDay) return `Batas ${c.maxPerDay} percobaan hari ini untuk ${nm} sudah tercapai. Coba lagi besok.`;
+  }
+  return '';
+}
+const checked = n => $(`input[name=${n}]:checked`).value;
+$('#btnStart').onclick = () => startQuiz({ mod: checked('mod'), level: checked('level'), mode: checked('mode'), n: +$('#selN').value });
+
+let run = null, tick = null;
+function startQuiz(o) {
+  const msg = gate(), box = $('#setupMsg');
+  if (msg) { go('setup'); box.textContent = msg; box.hidden = false; return; }
+  box.hidden = true;
+  CFG = cfgGet();
+  const qs = generateQuiz(o.mod, o.level, o.n);
+  run = { ...o, qs, order: qs.map((_, i) => i), pos: 0, res: {}, score: 0, streak: 0, maxStreak: 0, limit: { easy: 45, medium: 60, hard: 90 }[o.level], answered: false };
+  $('#timerBox').hidden = o.mode !== 'challenge'; $('#scoreBox').hidden = o.mode !== 'challenge';
+  $('#sNum').textContent = '0';
+  $('#calc').hidden = true; $('#calcFab').setAttribute('aria-expanded', 'false');
+  go('quiz'); showQ();
+}
+
+/* ---------- arena ---------- */
+function stopTimer() { if (tick) { clearInterval(tick); tick = null; } }
+function startTimer() {
+  stopTimer(); run.qStart = Date.now();
+  if (run.mode !== 'challenge') return;
+  const upd = () => {
+    const left = Math.max(0, run.limit - (Date.now() - run.qStart) / 1000);
+    $('#tNum').textContent = Math.ceil(left); $('#tBar').style.width = (left / run.limit * 100) + '%';
+    $('#timerBox').classList.toggle('low', left <= 10);
+    if (left <= 0) { stopTimer(); submit(true); }
+  };
+  upd(); tick = setInterval(upd, 200);
+}
+function showQ() {
+  const qi = run.order[run.pos], q = run.qs[qi]; run.cur = qi; run.answered = false; run.sel = null;
+  const done = Object.keys(run.res).length;
+  $('#qNum').textContent = `Soal ${done + 1} dari ${run.qs.length}`;
+  $('#qMeta').textContent = `${MODNAME[run.mod].split(' · ')[0]} · ${LVNAME[run.level]} · ${MODENAME[run.mode]}`;
+  $('#pBar').style.width = (done / run.qs.length * 100) + '%';
+  $('#qTag').textContent = q.tag; $('#qText').innerHTML = q.text;
+  const vis = $('#qVis');
+  if (q.visual != null) { vis.innerHTML = cellsHTML(q.visual) + '<p>Kotak berwarna membantu membayangkan nilainya dari 100 kotak.</p>'; vis.hidden = false; } else { vis.hidden = true; vis.innerHTML = ''; }
+  buildAnswer(q);
+  $('#hint').textContent = ''; $('#fb').hidden = true; $('#fb').innerHTML = '';
+  $('#btnAnswer').hidden = false; $('#btnNext').hidden = true;
+  $('#btnSkip').disabled = q.skipped || run.pos >= run.order.length - 1; $('#btnSkip').hidden = false;
+  startTimer();
+  const first = $('#ans input, #ans button.opt, #ans select'); if (first && q.type === 'fill') first.focus();
+}
+function buildAnswer(q) {
+  const box = $('#ans'); box.innerHTML = '';
+  if (q.type === 'mc' || q.type === 'tf') {
+    const w = document.createElement('div'); w.className = 'opts' + (q.type === 'tf' ? ' tfopts' : '');
+    q.choices.forEach((c, i) => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'opt'; b.dataset.i = i;
+      b.innerHTML = `<span class="ltr">${q.type === 'tf' ? (i ? '✗' : '✓') : 'ABCD'[i]}</span><span>${c}</span>`;
+      b.onclick = () => { run.sel = i; $$('.opt', w).forEach(x => x.classList.toggle('sel', x === b)); $('#hint').textContent = ''; };
+      w.appendChild(b);
+    });
+    box.appendChild(w);
+  } else if (q.type === 'fill') {
+    const w = document.createElement('div'); w.className = 'fills';
+    q.fields.forEach((f, i) => {
+      w.insertAdjacentHTML('beforeend', `<label class="fl" for="fi${i}"><span>${f.label}</span><span class="inp">${f.unit === 'Rp' ? '<em>Rp</em>' : ''}<input id="fi${i}" inputmode="${f.unit === 'Rp' ? 'numeric' : 'decimal'}" autocomplete="off" placeholder="${f.ph || ''}">${f.unit === '%' ? '<em>%</em>' : ''}</span></label>`);
+    });
+    box.appendChild(w);
+    $$('input', w).forEach(inp => inp.addEventListener('keydown', e => { if (e.key === 'Enter') submit(false); }));
+    w.insertAdjacentHTML('beforeend', '<p class="muted small">Tulis desimal dengan koma, misalnya 0,75. Tanda titik juga diterima.</p>');
+  } else if (q.type === 'match') {
+    const w = document.createElement('div'); w.className = 'fills';
+    q.pairs.forEach((p, i) => {
+      const row = document.createElement('div'); row.className = 'matchrow';
+      row.innerHTML = `<span class="l">${p.l}</span><span class="arrow" aria-hidden="true">→</span><select id="ms${i}" aria-label="Pasangan untuk soal ${i + 1}"><option value="">Pilih…</option>${q.rights.map(r => `<option value="${esc(r)}">${r.replace(/<[^>]+>/g, '')}</option>`).join('')}</select>`;
+      w.appendChild(row);
+    });
+    box.appendChild(w);
+  } else if (q.type === 'drag') {
+    box.insertAdjacentHTML('beforeend', '<div class="dragnote"><span>Terkecil</span><span>Terbesar</span></div>');
+    const ul = document.createElement('ul'); ul.className = 'drag'; ul.id = 'dragList';
+    q.order.forEach(it => {
+      const li = document.createElement('li'); li.draggable = true; li.dataset.v = it.val;
+      li.innerHTML = `<span class="grip" aria-hidden="true">⋮⋮</span><span class="dv">${it.html}</span><span class="mv"><button type="button" class="mini" data-d="-1" aria-label="Naikkan">↑</button><button type="button" class="mini" data-d="1" aria-label="Turunkan">↓</button></span>`;
+      ul.appendChild(li);
+    });
+    let dragEl = null;
+    ul.addEventListener('dragstart', e => { dragEl = e.target.closest('li'); if (dragEl) { dragEl.classList.add('drag-on'); try { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', ''); } catch (x) {} } });
+    ul.addEventListener('dragend', () => { if (dragEl) dragEl.classList.remove('drag-on'); dragEl = null; });
+    ul.addEventListener('dragover', e => {
+      e.preventDefault(); const t = e.target.closest('li'); if (!t || !dragEl || t === dragEl) return;
+      const r = t.getBoundingClientRect(); ul.insertBefore(dragEl, e.clientY < r.top + r.height / 2 ? t : t.nextSibling);
+    });
+    ul.addEventListener('click', e => {
+      const b = e.target.closest('.mini'); if (!b || b.disabled) return; const li = b.closest('li'), d = +b.dataset.d;
+      if (d < 0 && li.previousElementSibling) ul.insertBefore(li, li.previousElementSibling);
+      if (d > 0 && li.nextElementSibling) ul.insertBefore(li.nextElementSibling, li);
+      b.focus();
+    });
+    box.appendChild(ul);
+    box.insertAdjacentHTML('beforeend', '<p class="muted small" style="margin-top:8px">Seret kartu, atau pakai tombol panah.</p>');
+  }
+}
+function collect(q) {
+  if (q.type === 'mc' || q.type === 'tf') {
+    if (run.sel == null) return { complete: false };
+    return { complete: true, ok: run.sel === q.correct, userText: q.choices[run.sel] };
+  }
+  if (q.type === 'fill') {
+    const vals = q.fields.map((f, i) => $('#fi' + i).value);
+    if (q.fields.some((f, i) => !Number.isFinite(parseNum(vals[i], f.unit === 'Rp')))) return { complete: false };
+    return { complete: true, ok: q.fields.every((f, i) => fieldOk(f, vals[i])), userText: vals.map((v, i) => esc(v.trim()) + (q.fields[i].unit === '%' ? '%' : '')).join(' ; ') };
+  }
+  if (q.type === 'match') {
+    const vals = q.pairs.map((p, i) => $('#ms' + i).value);
+    if (vals.some(v => !v)) return { complete: false };
+    return { complete: true, ok: q.pairs.every((p, i) => vals[i] === p.r), userText: q.pairs.map((p, i) => `${p.l} → ${vals[i]}`).join(' · ') };
+  }
+  const items = $$('#dragList li');
+  const vals = items.map(li => +li.dataset.v);
+  return { complete: true, ok: vals.every((v, i) => v === q.sorted[i].val), userText: items.map(li => $('.dv', li).innerHTML).join(' &lt; ') };
+}
+function lockAnswer(q, ok) {
+  if (q.type === 'mc' || q.type === 'tf') {
+    $$('.opt').forEach(b => { b.disabled = true; const i = +b.dataset.i; if (i === q.correct) b.classList.add('right'); else if (b.classList.contains('sel')) b.classList.add('wrong'); });
+  } else if (q.type === 'fill') {
+    $$('#ans input').forEach((inp, i) => { inp.disabled = true; inp.closest('.inp').classList.add(fieldOk(q.fields[i], inp.value) ? 'right' : 'wrong'); });
+  } else if (q.type === 'match') {
+    $$('.matchrow').forEach((row, i) => { const s = $('select', row); s.disabled = true; row.classList.add(s.value === q.pairs[i].r ? 'right' : 'wrong'); });
+  } else {
+    const ul = $('#dragList'); ul.classList.add(ok ? 'right' : 'wrong'); $$('li', ul).forEach(li => { li.draggable = false; }); $$('.mini', ul).forEach(b => { b.disabled = true; });
+  }
+}
+function submit(timedOut) {
+  if (run.answered) return;
+  const q = run.qs[run.cur]; let ok = false, userText = '(waktu habis)';
+  if (!timedOut) {
+    const c = collect(q);
+    if (!c.complete) { $('#hint').textContent = q.type === 'fill' ? 'Isi jawabanmu dengan angka dulu.' : q.type === 'match' ? 'Pasangkan semua dulu.' : 'Pilih satu jawaban dulu.'; return; }
+    ok = c.ok; userText = c.userText;
+  }
+  run.answered = true; stopTimer();
+  const secs = Math.round((Date.now() - run.qStart) / 100) / 10;
+  let pts = 0;
+  if (ok) {
+    run.streak++; run.maxStreak = Math.max(run.maxStreak, run.streak); pts = 100;
+    if (run.mode === 'challenge') pts += Math.round(50 * Math.max(0, run.limit - secs) / run.limit) + Math.min(run.streak - 1, 4) * 10;
+  } else run.streak = 0;
+  run.score += pts; run.res[run.cur] = { ok, pts, secs, userText, timedOut: !!timedOut };
+  lockAnswer(q, ok);
+  const fb = $('#fb');
+  const showEx = run.mode === 'practice' || !ok;
+  fb.className = 'fb ' + (ok ? 'ok' : 'bad');
+  fb.innerHTML = ok
+    ? `<strong>Benar!${run.mode === 'challenge' ? ' +' + pts + ' poin' : ''}</strong>${showEx ? `<p>${q.explain}</p>` : ''}`
+    : `<strong>${timedOut ? 'Waktu habis.' : 'Belum tepat.'}</strong><p>Jawaban yang benar: <b>${q.answerText}</b></p><p>Ingat: ${q.explain}</p>`;
+  fb.hidden = false;
+  $('#sNum').textContent = run.score;
+  $('#pBar').style.width = (Object.keys(run.res).length / run.qs.length * 100) + '%';
+  $('#btnAnswer').hidden = true; $('#btnSkip').hidden = true; $('#btnNext').hidden = false;
+  $('#btnNext').textContent = Object.keys(run.res).length >= run.qs.length ? 'Lihat Hasil' : 'Selanjutnya';
+  $('#btnNext').focus();
+}
+$('#btnAnswer').onclick = () => submit(false);
+$('#btnNext').onclick = () => {
+  if (Object.keys(run.res).length >= run.qs.length) return finish();
+  run.pos++; if (run.pos >= run.order.length) return finish(); showQ();
+};
+$('#btnSkip').onclick = () => {
+  const qi = run.cur, q = run.qs[qi]; if (q.skipped || run.answered || run.pos >= run.order.length - 1) return;
+  q.skipped = true; run.order.push(qi); run.pos++; showQ(); toast('Soal dipindah ke urutan akhir');
+};
+/* kalkulator */
+const calc = { acc: null, op: null, cur: '0', fresh: false };
+const calcNum = () => parseFloat(calc.cur.replace(',', '.'));
+const calcStr = x => String(Math.round(x * 1e8) / 1e8).replace('.', ',');
+function calcApply() { const a = calc.acc, b = calcNum(); return calc.op === '+' ? a + b : calc.op === '−' ? a - b : calc.op === '×' ? a * b : (b === 0 ? NaN : a / b); }
+$('#calcKeys').addEventListener('click', e => {
+  const k = e.target.closest('button'); if (!k) return; const v = k.textContent;
+  if (/\d/.test(v) || v === ',') {
+    if (calc.fresh) { calc.cur = '0'; calc.fresh = false; }
+    if (v === ',') { if (!calc.cur.includes(',')) calc.cur += ','; } else calc.cur = calc.cur === '0' ? v : calc.cur + v;
+  } else if (v === 'C') { calc.acc = null; calc.op = null; calc.cur = '0'; calc.fresh = false; }
+  else if (v === '⌫') { calc.cur = calc.cur.length > 1 ? calc.cur.slice(0, -1) : '0'; }
+  else if (v === '=') { if (calc.op && calc.acc != null) { const r = calcApply(); calc.cur = Number.isFinite(r) ? calcStr(r) : 'Error'; calc.acc = null; calc.op = null; calc.fresh = true; } }
+  else { if (calc.op && calc.acc != null && !calc.fresh) { const r = calcApply(); calc.acc = Number.isFinite(r) ? r : 0; calc.cur = calcStr(calc.acc); } else calc.acc = calcNum() || 0; calc.op = v; calc.fresh = true; }
+  $('#calcOut').textContent = calc.cur;
+});
+$('#calcFab').onclick = () => { const c = $('#calc'); c.hidden = !c.hidden; $('#calcFab').setAttribute('aria-expanded', String(!c.hidden)); };
+
+/* ---------- kode hasil (murid kirim, guru impor) ---------- */
+const TAGLIST = ['A · Pecahan ke desimal', 'A · Pecahan ke desimal (isian)', 'A · Desimal ke pecahan', 'A · Benar atau salah', 'A · Mencocokkan', 'A · Mengurutkan',
+  'B · Pecahan ke persen', 'B · Desimal ke persen', 'B · Persen ke desimal', 'B · Benar atau salah', 'B · Mencocokkan', 'B · Isi titik-titik', 'B · Mengurutkan',
+  'C · Diskon', 'C · Potongan harga', 'C · Bunga tabungan', 'C · Pajak', 'C · Untung dan rugi', 'C · Diskon bertingkat', 'C · Mencari harga asli', 'C · Bunga bulanan', 'C · Benar atau salah'];
+const csum = s => { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return h.toString(36); };
+function encodeAttempt(a, name, cls) {
+  const p = { t: a.ts, n: name, c: cls, m: a.mod, l: a.level, o: a.mode, q: a.n, k: a.correct, s: a.score, p: a.pct, d: a.secs, i: a.items.map(x => [TAGLIST.indexOf(x.tag) >= 0 ? TAGLIST.indexOf(x.tag) : x.tag, x.ok ? 1 : 0]) };
+  const b = btoa(unescape(encodeURIComponent(JSON.stringify(p))));
+  return 'KH1.' + b + '.' + csum(b);
+}
+function decodeAttempt(code) {
+  const [v, b, c] = code.split('.');
+  if (v !== 'KH1' || !b || csum(b) !== c) throw new Error('checksum');
+  const p = JSON.parse(decodeURIComponent(escape(atob(b))));
+  const num = (x, lo, hi) => { x = Number(x); if (!Number.isFinite(x) || x < lo || x > hi) throw new Error('range'); return x; };
+  if (!'ABCD'.includes(p.m) || !LVNAME[p.l] || !MODENAME[p.o]) throw new Error('field');
+  const items = (p.i || []).slice(0, 60).map(([t, ok]) => ({ tag: typeof t === 'number' ? (TAGLIST[t] || 'Lainnya') : String(t).slice(0, 60), ok: !!ok }));
+  return { ts: num(p.t, 1e12, 4e12), name: String(p.n || 'Tamu').trim().slice(0, 30) || 'Tamu', cls: String(p.c || '').trim().slice(0, 30), mod: p.m, level: p.l, mode: p.o, n: num(p.q, 1, 60), correct: num(p.k, 0, 60), score: num(p.s, 0, 20000), pct: num(p.p, 0, 100), secs: num(p.d, 0, 36000), items, imp: true };
+}
+function updateSend() {
+  const code = encodeAttempt(run.att, ($('#sendName').value.trim() || 'Tamu').slice(0, 30), $('#sendCls').value.trim().slice(0, 30));
+  $('#sendCode').value = code;
+  $('#sendWa').href = 'https://wa.me/?text=' + encodeURIComponent(`Hasil kuis Kotak Hitung (${run.att.pct}% benar, skor ${run.att.score}). Kode untuk guru:\n${code}`);
+}
+['#sendName', '#sendCls'].forEach(s => $(s).addEventListener('input', () => { if (run && run.att) updateSend(); }));
+$('#sendCopy').onclick = () => { const t = $('#sendCode'); t.select(); copyText(t.value, 'Kode tersalin, kirim ke gurumu'); };
+
+/* ---------- hasil ---------- */
+function finish() {
+  stopTimer();
+  const n = run.qs.length, results = run.qs.map((q, i) => run.res[i] || { ok: false, secs: 0, pts: 0, userText: '(tidak dijawab)' });
+  const correct = results.filter(r => r.ok).length, secs = Math.round(results.reduce((s, r) => s + r.secs, 0));
+  const u = getUser();
+  const att = { ts: Date.now(), guest: !u, name: u ? u.name : 'Tamu', cls: u ? u.cls || '' : '', mod: run.mod, level: run.level, mode: run.mode, n, correct, score: run.score, pct: Math.round(correct / n * 100), secs, items: run.qs.map((q, i) => ({ tag: q.tag, ok: results[i].ok })) };
+  const all = getAttempts(); all.push(att); LS.set('attempts', all.slice(-3000));
+  run.att = att; run.results = results;
+  renderResult(); go('result');
+}
+function renderResult() {
+  const a = run.att, n = a.n, results = run.results;
+  $('#rMeta').textContent = `${MODNAME[a.mod]} · ${LVNAME[a.level]} · ${MODENAME[a.mode]}`;
+  $('#rScore').textContent = a.score;
+  const avg = a.secs / n;
+  $('#rKpis').innerHTML = `<div><span class="muted small">Jawaban benar</span><b>${a.correct}/${n}</b></div><div><span class="muted small">Persentase benar</span><b>${a.pct}%</b></div><div><span class="muted small">Waktu total</span><b>${mmss(a.secs)}</b></div><div><span class="muted small">Penguasaan</span><b>${a.pct >= 80 ? 'Ahli' : a.pct >= 50 ? 'Menengah' : 'Pemula'}</b></div>`;
+  const star = '<svg viewBox="0 0 30 30" aria-hidden="true"><circle cx="15" cy="15" r="13" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M15 7l2.4 5 5.4.7-4 3.7 1 5.4L15 19.2l-4.8 2.6 1-5.4-4-3.7 5.4-.7z" fill="currentColor"/></svg>';
+  const bd = [];
+  if (a.pct > 80 && a.mod !== 'C') bd.push(['Master Desimal', 'Skor di atas 80% pada pecahan, desimal, dan persen']);
+  const story = run.qs.map((q, i) => [q, results[i]]).filter(([q]) => q.story);
+  if (story.length >= 2 && story.filter(([, r]) => r.ok).length / story.length >= 0.6) bd.push(['Pencari Diskon Handal', 'Menyelesaikan soal cerita persentase dengan baik']);
+  if (a.pct === 100) bd.push(['Sempurna', 'Semua soal dijawab benar']);
+  if (run.maxStreak >= 5) bd.push(['Beruntun ' + run.maxStreak, run.maxStreak + ' jawaban benar berturut-turut']);
+  if (a.mode === 'challenge' && a.pct >= 70 && avg < run.limit / 3) bd.push(['Kilat', 'Benar dan cepat: rata-rata ' + avg.toFixed(1).replace('.', ',') + ' detik per soal']);
+  if (a.level === 'hard' && a.pct >= 70) bd.push(['Penakluk Level Mahir', 'Skor 70% ke atas di level sulit']);
+  $('#rBadges').innerHTML = bd.length ? bd.map(([t, d]) => `<div class="badge">${star}<div><b>${t}</b><span>${d}</span></div></div>`).join('') : '<p class="muted">Belum ada lencana. Capai skor di atas 80% untuk lencana Master Desimal.</p>';
+  $('#rChips').innerHTML = results.map((r, i) => `<button class="chip ${r.ok ? 'ok' : 'no'}" data-i="${i}" aria-pressed="false" aria-label="Soal ${i + 1}, ${r.ok ? 'benar' : 'salah'}">${i + 1}</button>`).join('');
+  const show = i => {
+    $$('#rChips .chip').forEach(c => c.setAttribute('aria-pressed', String(+c.dataset.i === i)));
+    const q = run.qs[i], r = results[i];
+    $('#rDetail').innerHTML = `<p class="eyebrow">Soal ${i + 1} · ${esc(q.tag)} · ${r.ok ? 'Benar' : 'Salah'}</p><p style="font-weight:600">${q.text}</p><dl><dt>Jawabanmu</dt><dd>${r.userText}</dd><dt>Yang benar</dt><dd>${q.answerText}</dd><dt>Pembahasan</dt><dd>${q.explain}</dd></dl>`;
+  };
+  $('#rChips').onclick = e => { const c = e.target.closest('.chip'); if (c) show(+c.dataset.i); };
+  const firstWrong = results.findIndex(r => !r.ok); show(firstWrong >= 0 ? firstWrong : 0);
+  const u = getUser(), cb = $('#rCertBox');
+  if (u && a.pct >= 60) {
+    const code = 'KH-' + a.ts.toString(36).toUpperCase().slice(-6);
+    const dt = new Date(a.ts).toLocaleDateString('id-ID', { dateStyle: 'long' });
+    cb.innerHTML = `<h3>Sertifikat digital</h3><div class="cert"><p class="eyebrow">Kotak Hitung</p><h4>Sertifikat Penguasaan</h4><p class="muted">diberikan kepada</p><span class="nm">${esc(u.name)}</span><p>atas capaian ${a.pct}% pada ${esc(MODNAME[a.mod])}, level ${LVNAME[a.level]}, dengan skor ${a.score}.</p><p class="muted small">${dt} · Nomor ${code}</p></div><div class="share"><button class="btn small" id="certCopy">Salin teks sertifikat</button></div><p class="muted small">Sertifikat tampil di halaman ini. Ambil tangkapan layar untuk menyimpannya.</p>`;
+    $('#certCopy').onclick = () => copyText(`Sertifikat Penguasaan Kotak Hitung\n${u.name}\n${MODNAME[a.mod]}, level ${LVNAME[a.level]}\nSkor ${a.score}, benar ${a.pct}%\n${dt}\nNomor ${code}`, 'Teks sertifikat tersalin');
+  } else if (!u) cb.innerHTML = '<h3>Sertifikat digital</h3><div class="empty">Masuk dulu untuk menyimpan riwayat nilai dan mendapat sertifikat saat skormu 60% atau lebih. <button class="link" id="certLogin">Masuk sekarang</button></div>', $('#certLogin').onclick = () => $('#btnLogin').click();
+  else cb.innerHTML = '<h3>Sertifikat digital</h3><div class="empty">Sertifikat terbuka saat persentase benar mencapai 60%. Coba lagi, kamu pasti bisa.</div>';
+  const txt = `Aku dapat skor ${a.score} (${a.pct}% benar) di Kotak Hitung, kuis pecahan, desimal, dan persentase. Berani coba kalahkan?`;
+  const link = (u2, t) => `<a class="btn small" target="_blank" rel="noopener noreferrer" href="${u2}">${t}</a>`;
+  $('#rShare').innerHTML = link('https://wa.me/?text=' + encodeURIComponent(txt), 'WhatsApp') + link('https://twitter.com/intent/tweet?text=' + encodeURIComponent(txt), 'X') + link('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(location.href), 'Facebook') + '<button class="btn small" id="shareCopy">Salin teks</button>';
+  $('#shareCopy').onclick = () => copyText(txt, 'Teks tersalin');
+  const su = getUser(); $('#sendName').value = su ? su.name : ''; $('#sendCls').value = su ? su.cls || '' : '';
+  updateSend();
+}
+$('#btnAgain').onclick = () => startQuiz({ mod: run.mod, level: run.level, mode: run.mode, n: run.qs.length });
+
+/* ---------- peringkat ---------- */
+const isGuest = a => a.guest || a.name === 'Tamu';
+function renderBoard() {
+  const mode = $('#boardMode').value, all = getAttempts();
+  const rows = all.filter(a => !isGuest(a) && (mode === 'all' || a.mode === mode)).sort((x, y) => y.score - x.score || x.secs - y.secs).slice(0, 31);
+  const u = getUser();
+  $('#boardBody').innerHTML = rows.length ? rows.map((r, i) => `<tr class="${u && r.name === u.name ? 'me' : ''}"><td class="rank">${i + 1}</td><td>${esc(r.name)}${r.cls ? ` <span class="muted small">${esc(r.cls)}</span>` : ''}</td><td>${esc(r.mod)}</td><td>${LVNAME[r.level]}</td><td class="num">${r.score}</td><td class="num">${r.correct}/${r.n}</td><td class="num">${mmss(r.secs)}</td></tr>`).join('') : `<tr><td colspan="7"><div class="empty">Papan peringkat masih kosong. ${u ? 'Selesaikan satu kuis untuk menjadi yang pertama.' : 'Masuk dengan namamu, lalu selesaikan satu kuis. Skor pengguna yang sudah masuk akan muncul di sini.'}</div></td></tr>`;
+  $('#boardNote').textContent = 'Hanya skor pengguna yang sudah masuk yang tampil. Diurutkan dari skor tertinggi, lalu waktu tercepat. Data tersimpan di perangkat ini.';
+  const mine = all.filter(a => a.name === (u ? u.name : 'Tamu')).slice(-8).reverse();
+  $('#history').innerHTML = mine.length ? `<div class="tablewrap"><table><thead><tr><th>Tanggal</th><th>Topik</th><th>Level</th><th>Mode</th><th class="num">Skor</th><th class="num">Benar</th></tr></thead><tbody>${mine.map(a => `<tr><td>${new Date(a.ts).toLocaleDateString('id-ID', { dateStyle: 'medium' })}</td><td>${a.mod}</td><td>${LVNAME[a.level]}</td><td>${MODENAME[a.mode]}</td><td class="num">${a.score}</td><td class="num">${a.pct}%</td></tr>`).join('')}</tbody></table></div>` : '<div class="empty">Belum ada riwayat. Nilai kuis yang kamu selesaikan akan muncul di sini.</div>';
+}
+$('#boardMode').onchange = renderBoard;
+
+/* ---------- admin ---------- */
+function renderAdmin() {
+  const c = cfgGet(), all = getAttempts();
+  $('#cfgShuffle').checked = c.shuffle; $('#cfgMax').value = c.maxPerDay; $('#cfgOpen').value = c.openAt; $('#cfgClose').value = c.closeAt;
+  const avg = k => all.length ? Math.round(all.reduce((s, a) => s + a[k], 0) / all.length) : 0;
+  $('#aKpis').innerHTML = `<div><span class="muted small">Percobaan</span><b>${all.length}</b></div><div><span class="muted small">Peserta</span><b>${new Set(all.map(a => a.name)).size}</b></div><div><span class="muted small">Rata-rata benar</span><b>${avg('pct')}%</b></div><div><span class="muted small">Rata-rata skor</span><b>${avg('score')}</b></div>`;
+  const by = {};
+  all.forEach(a => { const k = a.name + '|' + (a.cls || ''); const s = by[k] || (by[k] = { name: a.name, cls: a.cls || '', n: 0, best: 0, pct: 0, last: 0 }); s.n++; s.best = Math.max(s.best, a.score); s.pct += a.pct; s.last = Math.max(s.last, a.ts); });
+  $('#aStudents').innerHTML = Object.values(by).sort((x, y) => x.cls.localeCompare(y.cls) || x.name.localeCompare(y.name)).map(s => `<tr><td>${esc(s.name)}</td><td>${esc(s.cls) || '-'}</td><td class="num">${s.n}</td><td class="num">${s.best}</td><td class="num">${Math.round(s.pct / s.n)}%</td><td>${new Date(s.last).toLocaleDateString('id-ID', { dateStyle: 'medium' })}</td></tr>`).join('') || '<tr><td colspan="6" class="muted">Belum ada murid.</td></tr>';
+  if (!all.length) {
+    $('#aStudents').innerHTML = '<tr><td colspan="6" class="muted">Belum ada hasil. Impor kode dari murid di atas untuk mengisi rekap ini.</td></tr>';
+    $('#aHard').innerHTML = '<div class="empty">Belum ada data. Setelah ada yang menyelesaikan kuis, jenis soal yang paling sulit muncul di sini.</div>';
+    $('#aMods').innerHTML = '<tr><td colspan="4" class="muted">Belum ada percobaan.</td></tr>'; $('#csvBox').value = ''; return;
+  }
+  const tags = {}; all.forEach(a => (a.items || []).forEach(i => { const t = tags[i.tag] || (tags[i.tag] = { t: 0, w: 0 }); t.t++; if (!i.ok) t.w++; }));
+  const hard = Object.entries(tags).map(([k, v]) => [k, v.w / v.t, v.t]).sort((a, b) => b[1] - a[1] || b[2] - a[2]).slice(0, 7);
+  $('#aHard').innerHTML = hard.map(([k, r, t]) => `<div class="hbar"><span>${esc(k)} <span class="muted small">(${t} soal)</span></span><span class="track"><i style="width:${Math.round(r * 100)}%"></i></span><span class="pctv">${Math.round(r * 100)}%</span></div>`).join('');
+  $('#aMods').innerHTML = ['A', 'B', 'C', 'D'].map(m => { const x = all.filter(a => a.mod === m); return `<tr><td>${MODNAME[m]}</td><td class="num">${x.length}</td><td class="num">${x.length ? Math.round(x.reduce((s, a) => s + a.score, 0) / x.length) : '-'}</td><td class="num">${x.length ? Math.round(x.reduce((s, a) => s + a.pct, 0) / x.length) + '%' : '-'}</td></tr>`; }).join('');
+  const q = v => '"' + String(v).replace(/"/g, '""') + '"';
+  $('#csvBox').value = ['Waktu,Nama,Kelas,Modul,Level,Mode,Soal,Benar,Skor,Persen,Detik'].concat(all.map(a => [q(new Date(a.ts).toISOString()), q(a.name), q(a.cls), a.mod, a.level, a.mode, a.n, a.correct, a.score, a.pct, a.secs].join(','))).join('\n');
+}
+$('#cfgSave').onclick = () => {
+  LS.set('cfg', { shuffle: $('#cfgShuffle').checked, maxPerDay: Math.max(0, +$('#cfgMax').value || 0), openAt: $('#cfgOpen').value, closeAt: $('#cfgClose').value });
+  $('#cfgMsg').textContent = 'Tersimpan.'; setTimeout(() => { $('#cfgMsg').textContent = ''; }, 2000);
+};
+$('#impGo').onclick = () => {
+  const codes = $('#impBox').value.match(/KH1\.[A-Za-z0-9+\/=]+\.[a-z0-9]+/g) || [], msg = $('#impMsg');
+  if (!codes.length) { msg.textContent = 'Tidak ada kode yang dikenali. Kode diawali KH1.'; return; }
+  const all = getAttempts(), keys = new Set(all.map(a => [a.ts, a.name, a.mod, a.level].join('|')));
+  let ok = 0, dup = 0, bad = 0;
+  codes.forEach(c => {
+    try { const a = decodeAttempt(c), k = [a.ts, a.name, a.mod, a.level].join('|'); if (keys.has(k)) dup++; else { keys.add(k); all.push(a); ok++; } } catch (e) { bad++; }
+  });
+  LS.set('attempts', all.slice(-3000));
+  msg.textContent = `${ok} hasil diimpor, ${dup} sudah ada, ${bad} kode rusak.` + (bad ? ' Minta murid mengirim ulang kodenya utuh.' : '');
+  if (ok) $('#impBox').value = '';
+  renderAdmin();
+};
+$('#csvCopy').onclick = () => { const t = $('#csvBox'); t.select(); copyText(t.value, 'CSV tersalin'); };
+let wipeT = null;
+$('#wipe').onclick = e => {
+  const b = e.currentTarget;
+  if (b.dataset.armed) { LS.set('attempts', []); delete b.dataset.armed; b.textContent = 'Hapus semua data'; renderAdmin(); toast('Data dihapus'); return; }
+  b.dataset.armed = '1'; b.textContent = 'Klik lagi untuk menghapus semua'; clearTimeout(wipeT);
+  wipeT = setTimeout(() => { delete b.dataset.armed; b.textContent = 'Hapus semua data'; }, 4000);
+};
+
+renderWho(); go('home');
+</script>
+
+</body></html>
